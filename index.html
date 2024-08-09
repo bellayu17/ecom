@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product and Website Evaluation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Product Evaluation Form</h1>
+        <form id="productForm">
+            <label for="category">Product Category:</label>
+            <input type="text" id="category" name="category" required>
+
+            <label for="keywords">Product Keywords:</label>
+            <input type="text" id="keywords" name="keywords" required>
+
+            <label for="description">Product Description:</label>
+            <textarea id="description" name="description" required></textarea>
+
+            <label for="url">Website URL:</label>
+            <input type="url" id="url" name="url" required>
+
+            <button type="submit">Submit</button>
+        </form>
+        <div id="productResults"></div>
+
+        <h1>Website Analysis Form</h1>
+        <form id="websiteForm">
+            <label for="website_url">Website URL:</label>
+            <input type="url" id="website_url" name="website_url" required>
+
+            <button type="submit">Analyze</button>
+        </form>
+        <div id="websiteResults"></div>
+    </div>
+
+    <script>
+        document.getElementById('productForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch('/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('productResults');
+                resultsDiv.innerHTML = `
+                    <h2>Product Evaluation Results</h2>
+                    <p><strong>Top Products:</strong> ${JSON.stringify(data.top_products)}</p>
+                    <p><strong>Trend Score:</strong> ${data.trend_score}</p>
+                    <p><strong>Recommendations:</strong> ${data.recommendations}</p>
+                    <p><strong>Recommended Platform:</strong> ${data.recommended_platform}</p>
+                    <p><strong>Platform Scores:</strong> ${JSON.stringify(data.platform_scores)}</p>
+                    <p><strong>Improved Description:</strong> ${data.improved_description}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('websiteForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch('/analyze_website', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('websiteResults');
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p><strong>Error:</strong> ${data.error}</p>`;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <h2>Website Analysis Results</h2>
+                        <p><strong>Sentiment Report:</strong> ${JSON.stringify(data.report)}</p>
+                        <p><strong>Improved Description:</strong> ${data.improved_description}</p>
+                    `;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
